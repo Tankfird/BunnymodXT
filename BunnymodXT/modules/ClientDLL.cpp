@@ -1048,6 +1048,9 @@ void ClientDLL::RegisterCVarsAndCommands()
 		REG(bxt_hud_entities);
 		REG(bxt_hud_entities_offset);
 		REG(bxt_hud_entities_anchor);
+		REG(bxt_hud_entities_avel);
+		REG(bxt_hud_entities_avel_offset);
+		REG(bxt_hud_entities_avel_anchor);
 		REG(bxt_cross);
 		REG(bxt_cross_color);
 		REG(bxt_cross_alpha);
