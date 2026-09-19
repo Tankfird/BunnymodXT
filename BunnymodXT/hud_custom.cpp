@@ -1435,9 +1435,9 @@ namespace CustomHud
 			if (!hw.IsValidEdict(ent))
 				continue;
 
-			if (ent->v.avelocity[0] == 0
-			&& ent->v.avelocity[1] == 0
-			&& ent->v.avelocity[2] == 0)
+			if ((ent->v.avelocity[0] == 0 && ent->v.avelocity[1] == 0 && ent->v.avelocity[2] == 0)
+			|| ent->v.movetype != MOVETYPE_PUSH
+			|| ent->v.solid == SOLID_NOT)
 				continue;
 
 			const char *classname = hw.GetString(ent->v.classname);
@@ -1446,6 +1446,12 @@ namespace CustomHud
 			if (ent->v.targetname != 0) {
 				const char *targetname = hw.GetString(ent->v.targetname);
 				out << " - " << targetname;
+			}
+
+			out << " " << ent->v.avelocity[0] << " " << ent->v.avelocity[1] << " " << ent->v.avelocity[2];
+
+			if (CVars::bxt_hud_entities_avel.GetInt() > 1) {
+				out << " | " << ent->v.nextthink << " " << ent->v.ltime << " | " << (ent->v.nextthink - ent->v.ltime);
 			}
 
 			out << '\n';
