@@ -101,6 +101,7 @@ public:
 	TraceResult TraceLine(const float v1[3], const float v2[3], int fNoMonsters, edict_t *pentToSkip) const;
 
 	enginefuncs_t *pEngfuncs;
+	void **ppmove;
 
 	entvars_t *obboPushable = nullptr;
 
@@ -163,7 +164,6 @@ protected:
 	void DoWouldCrashMessage();
 	void CoFChanges();
 
-	void **ppmove;
 	ptrdiff_t offPlayerIndex;
 	ptrdiff_t offOldbuttons;
 	ptrdiff_t offOnground;

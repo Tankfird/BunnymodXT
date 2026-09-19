@@ -1413,6 +1413,68 @@ namespace CustomHud
 			DrawMultilineString(x, y, out.str());
 	}
 
+	static void DrawPhysEnts(float flTime)
+	{
+		if (!CVars::bxt_hud_physents.GetBool() || CVars::bxt_hud_physents.GetInt() > 3)
+			return;
+		
+		const auto& hw = HwDLL::GetInstance();
+		const auto& sv = ServerDLL::GetInstance();
+		
+		if (!sv.ppmove)
+			return;
+		
+		int x, y;
+		GetPosition(CVars::bxt_hud_entities_offset, CVars::bxt_hud_entities_anchor, &x, &y, 2, (si.iCharHeight * 3) + 2);
+
+		const auto max_lines = std::max(1, (si.iHeight - y - si.iCharHeight) / si.iCharHeight);
+		int current_line = 0;
+
+		std::ostringstream out;
+
+		playermove_t* pmove = static_cast<playermove_t*>(*sv.ppmove);
+		physent_t* physents = static_cast<physent_t*>(pmove->physents);
+		edict_t* groundEnt = HwDLL::GetInstance().GetPlayerEdict()->v.groundentity;
+		int numPE = pmove->numphysent;
+		int onground = pmove->onground;
+		edict_t *edicts;
+		const int numEdicts = hw.GetEdicts(&edicts);
+		const auto groundEntIndex = groundEnt - edicts;
+		if (hw.IsValidEdict(groundEnt)) {
+			const char *classname = hw.GetString(groundEnt->v.classname);
+			out << classname << '\n';
+		}
+		out << "gEnt#: " << groundEntIndex << "\n";
+		out << "onground: " << onground << "\n";
+		int e = 0;
+		do {
+			physent_t* pe = physents + e;
+			edict_t* ent = edicts + pe->info;
+			if (e == onground) {
+				out << "=|";
+			} else if (e < numPE) {
+				out << "+|";
+			} else {
+				out << "-|";
+			}
+			out << e << ": " << pe->name << " | " << pe->info;
+			
+			if (hw.IsValidEdict(ent))
+				out << ": " << hw.GetString(ent->v.classname);
+			out << '\n';
+
+			if (++current_line == max_lines) {
+				x = DrawMultilineString(x, y, out.str()) + 10;
+				out.str(std::string());
+				current_line = 0;
+			}
+			e++;
+		} while ((physents + e)->info > 0);
+
+		if (current_line > 0)
+			DrawMultilineString(x, y, out.str());
+	}
+
 	static void DrawCrosshair(float time)
 	{
 		if (!CVars::bxt_cross.GetBool())
@@ -1777,6 +1839,7 @@ namespace CustomHud
 		DrawCollisionDepthMap(flTime);
 		DrawTASEditorStatus();
 		DrawEntities(flTime);
+		DrawPhysEnts(flTime);
 		DrawCrosshair(flTime);
 		DrawStamina(flTime);
 		DrawSplit(flTime);
