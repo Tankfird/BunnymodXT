@@ -316,6 +316,17 @@ public:
 	void SetFreeCam(bool enabled);
 	void FreeCamTick();
 
+	vec3_t rotPos = {};
+	vec3_t rotAng = {};
+	vec3_t rotAVel = {};
+	float rotMovetime = 0.01f;
+	bool rotNewTrace = false;
+	vec3_t traceStartPos = {};
+	vec3_t traceEndPos = {};
+	vec3_t predEndPos = {};
+	float traceFrac = 0.0;
+	int traceAllSolid = 1;
+
 	float currentRenderFOV = 0;
 
 	bool insideDrawCrosshair = false;
@@ -432,6 +443,12 @@ protected:
 	struct Cmd_BXT_CH_Get_Other_Player_Info;
 	struct Cmd_BXT_CH_Entity_Set_Health;
 	struct Cmd_BXT_CH_Monster_Set_Origin;
+	struct Cmd_BXT_Set_Rot_Pos;
+	struct Cmd_BXT_Set_Rot_Angle;
+	struct Cmd_BXT_Set_Rot_AVel;
+	struct Cmd_BXT_Set_Rot_Frametime;
+	struct Cmd_BXT_Set_Rot_Ent;
+	struct Cmd_BXT_Set_Rot_Trace;
 	struct Cmd_BXT_Get_Origin_And_Angles;
 	struct Cmd_BXT_Get_Server_Time;
 	struct Cmd_BXT_Get_SteamID_From_Demo;

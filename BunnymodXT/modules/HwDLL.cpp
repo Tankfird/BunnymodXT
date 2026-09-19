@@ -3322,6 +3322,99 @@ struct HwDLL::Cmd_BXT_CH_Monster_Set_Origin
 	}
 };
 
+
+struct HwDLL::Cmd_BXT_Set_Rot_Pos
+{
+	USAGE("Usage: bxt_ch_rot_vel <x> <y> <z>\n");
+	static void handler(float x, float y, float z)
+	{
+		Vector pos = Vector(x, y, z);
+		auto &hw = HwDLL::GetInstance();
+		hw.rotPos = pos;
+	}
+
+};
+struct HwDLL::Cmd_BXT_Set_Rot_Angle
+{
+	USAGE("Usage: bxt_ch_rot_ang <x> <y> <z>\n");
+	static void handler(float p, float y, float r)
+	{
+
+		Vector ang = Vector(p, y, r);
+		auto &hw = HwDLL::GetInstance();
+		hw.rotAng = ang;
+	}
+
+};
+struct HwDLL::Cmd_BXT_Set_Rot_AVel
+{
+	USAGE("Usage: bxt_ch_rot_avel <x> <y> <z>\n");
+	static void handler(float pVel, float yVel, float rVel)
+	{
+
+		Vector aVel = Vector(pVel, yVel, rVel);
+		auto &hw = HwDLL::GetInstance();
+		hw.rotAVel = aVel;
+	}
+
+};
+struct HwDLL::Cmd_BXT_Set_Rot_Frametime
+{
+	USAGE("Usage: bxt_ch_rot_frametime <frametime>\n");
+	static void handler(float frametime)
+	{
+		auto &hw = HwDLL::GetInstance();
+		if (frametime > 0.25) {
+			frametime = (float)0.25;
+		} else if (frametime < 0.001) {
+			frametime = (float)0.01;
+		}
+
+
+		hw.rotMovetime = frametime;
+	}
+
+};
+
+
+struct HwDLL::Cmd_BXT_Set_Rot_Ent
+{
+	USAGE("Usage: Aim at ent to copy values\n");
+	static void handler()
+	{
+		auto &hw = HwDLL::GetInstance();
+		const auto& serv = ServerDLL::GetInstance();
+		float view[3], end[3];
+		ClientDLL::GetInstance().SetupTraceVectors(view, end);
+
+		const auto tr = serv.TraceLine(view, end, 0, HwDLL::GetInstance().GetPlayerEdict());
+
+		if (tr.pHit)
+		{
+			const auto ent = tr.pHit;
+			hw.rotPos = ent->v.origin;
+			hw.rotAng = ent->v.angles;
+			hw.rotAVel = ent->v.avelocity;
+			hw.ORIG_Con_Printf("Origin: %f %f %f\n", hw.rotPos.x, hw.rotPos.y, hw.rotPos.z);
+			hw.ORIG_Con_Printf("Angles: %f %f %f\n", hw.rotAng.x, hw.rotAng.y, hw.rotAng.z);
+			hw.ORIG_Con_Printf("AVelocity: %f %f %f\n", hw.rotAVel.x, hw.rotAVel.y, hw.rotAVel.z);
+			hw.ORIG_Con_Printf("Frametime: %f\n", hw.rotMovetime);
+		}
+	}
+
+};
+
+struct HwDLL::Cmd_BXT_Set_Rot_Trace
+{
+	USAGE("Usage: Sets trace to draw\n");
+	static void handler()
+	{
+		auto& hw = HwDLL::GetInstance();
+		hw.rotNewTrace = true;
+	}
+
+};
+
 struct HwDLL::Cmd_Plus_BXT_CH_Hook
 {
 	NO_USAGE();
@@ -5867,7 +5960,13 @@ void HwDLL::RegisterCVarsAndCommandsIfNeeded()
 	wrapper::AddCheat<
 		Cmd_BXT_CH_Set_Velocity_Angles,
 		Handler<float>,
-		Handler<float, float, float>>("bxt_ch_set_vel_angles");
+		Handler<float, float, float>>("bxt_ch_set_vel_angles");	
+	wrapper::Add<Cmd_BXT_Set_Rot_Pos, Handler<float, float, float>>("bxt_ch_rot_pos");
+	wrapper::Add<Cmd_BXT_Set_Rot_Angle, Handler<float, float, float>>("bxt_ch_rot_ang");
+	wrapper::Add<Cmd_BXT_Set_Rot_AVel, Handler<float, float, float>>("bxt_ch_rot_avel");
+	wrapper::Add<Cmd_BXT_Set_Rot_Frametime, Handler<float>>("bxt_ch_rot_ft");
+	wrapper::Add<Cmd_BXT_Set_Rot_Ent, Handler<>>("bxt_ch_rot_ent"); 
+	wrapper::Add<Cmd_BXT_Set_Rot_Trace, Handler<>>("bxt_ch_rot_trace");
 	wrapper::AddCheat<Cmd_Plus_BXT_CH_Hook, Handler<>, Handler<int>>("+bxt_ch_hook");
 	wrapper::AddCheat<Cmd_Minus_BXT_CH_Hook, Handler<>, Handler<int>>("-bxt_ch_hook");
 	wrapper::AddCheat<Cmd_BXT_CH_CheckPoint_Create, Handler<>>("bxt_ch_checkpoint_create");

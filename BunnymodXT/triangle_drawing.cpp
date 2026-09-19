@@ -393,6 +393,95 @@ namespace TriangleDrawing
 		}
 	}
 
+	static void DrawRotTrace(triangleapi_s *pTriAPI)
+	{
+		if (!CVars::bxt_show_rotate_trace.GetBool())
+			return;
+
+		auto& hw = HwDLL::GetInstance();
+		auto pEngfuncs = ServerDLL::GetInstance().pEngfuncs;
+		
+		edict_t* pEnt = hw.GetPlayerEdict();
+		vec3_t newOrg;
+		vec3_t amove, pushorig, nextAng;
+		vec3_t forward, right, up;
+		vec3_t forwardNow, rightNow, upNow;
+
+		float movetime = hw.rotMovetime;
+		amove = hw.rotAVel*movetime;
+		pEngfuncs->pfnAngleVectors(hw.rotAng, forward, right, up);
+		pushorig = hw.rotAng;
+		nextAng = hw.rotAng + amove;
+
+		// AngleVectorsTranspose
+		{
+			vec3_t f, r, u;
+			pEngfuncs->pfnAngleVectors(nextAng, f, r, u);
+			if (forwardNow) { forwardNow[0] = f[0]; forwardNow[1] = -r[0]; forwardNow[2] = u[0]; }
+			if (rightNow)   { rightNow[0]   = f[1]; rightNow[1]   = -r[1]; rightNow[2]   = u[1]; }
+			if (upNow)      { upNow[0]      = f[2]; upNow[1]      = -r[2]; upNow[2]      = u[2]; }
+		}
+
+		
+		vec3_t start, end, push, move, endPos;
+
+		start = pEnt->v.origin - hw.rotPos;
+		move.x = DotProduct(forward, start);
+		move.y = -DotProduct(right, start);
+		move.z = DotProduct(up, start);
+		end.x = DotProduct(forwardNow, move);
+		end.y = DotProduct(rightNow, move);
+		end.z = DotProduct(upNow, move);
+
+		push = end - start;
+		endPos = push + pEnt->v.origin;
+		TraceResult tr{};
+		pEngfuncs->pfnTraceMonsterHull(pEnt, pEnt->v.origin, endPos, 0, pEnt, &tr);
+		vec3_t mins = pEnt->v.mins;
+		vec3_t maxs = pEnt->v.maxs;
+		float aS = (float) tr.fAllSolid;
+		float naS = (float) 1 - tr.fAllSolid;
+
+		
+		pTriAPI->RenderMode(kRenderTransAdd);
+		pTriAPI->Color4f(aS, naS, 0.0f, 1.0f);
+		TriangleUtils::DrawLine(pTriAPI, pEnt->v.origin, tr.vecEndPos);
+		pTriAPI->Color4f(aS, naS, 0.0f, 0.5f);
+		TriangleUtils::DrawAACuboidWireframe(pTriAPI, tr.vecEndPos+mins, tr.vecEndPos+maxs);
+		if (tr.flFraction != 1) {
+			pTriAPI->Color4f(0.8f, 0.0f, 0.0f, 1.0f);
+			TriangleUtils::DrawLine(pTriAPI, tr.vecEndPos, endPos);
+			pTriAPI->Color4f(1.0f, 0.0f, 0.0f, 0.5f);
+			TriangleUtils::DrawAACuboidWireframe(pTriAPI, endPos+mins, endPos+maxs);
+		}
+
+		if (hw.rotNewTrace) {
+			hw.rotNewTrace = false;
+			hw.traceStartPos = pEnt->v.origin;
+			hw.traceEndPos = tr.vecEndPos;
+			hw.predEndPos = endPos;
+			hw.traceFrac = tr.flFraction;
+			hw.traceAllSolid = tr.fAllSolid;
+		}
+
+		if (CVars::bxt_show_rotate_trace.GetInt() == 2) {
+			aS = (float) hw.traceAllSolid;
+			naS = (float) 1 - hw.traceAllSolid;
+
+			pTriAPI->RenderMode(kRenderTransAdd);
+			pTriAPI->Color4f(aS, naS, 0.0f, 1.0f);
+			TriangleUtils::DrawLine(pTriAPI, hw.traceStartPos, hw.traceEndPos);
+			pTriAPI->Color4f(aS, naS, 0.0f, 0.5f);
+			TriangleUtils::DrawAACuboidWireframe(pTriAPI, hw.traceEndPos+mins, hw.traceEndPos+maxs);
+			if (hw.traceFrac != 1) {
+				pTriAPI->Color4f(0.8f, 0.0f, 0.0f, 1.0f);
+				TriangleUtils::DrawLine(pTriAPI, hw.traceEndPos, hw.predEndPos);
+				pTriAPI->Color4f(1.0f, 0.0f, 0.0f, 0.5f);
+				TriangleUtils::DrawAACuboidWireframe(pTriAPI, hw.predEndPos+mins, hw.predEndPos+maxs);
+			}
+		}
+	}
+
 	static void DrawBullets(triangleapi_s* pTriAPI, const std::deque<std::array<Vector, 2>>& points_vec, const std::deque<bool>& hit_vec, byte r, byte g, byte b)
 	{
 		byte rEnd = 255 - r, gEnd = 255 - g, bEnd = 255 - b;
@@ -2430,6 +2519,7 @@ namespace TriangleDrawing
 		DrawPlayerAbsMinMax(pTriAPI);
 		DrawMonsterAbsMinMax(pTriAPI);
 		DrawPhysentAbsMinMax(pTriAPI);
+		DrawRotTrace(pTriAPI);
 		DrawBulletsEnemyTrace(pTriAPI);
 		DrawBulletsPlayerTrace(pTriAPI);
 		DrawSplits(pTriAPI);

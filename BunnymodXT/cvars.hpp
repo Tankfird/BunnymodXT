@@ -176,6 +176,10 @@
 	X(bxt_hud_gonarch, "0") \
 	X(bxt_hud_gonarch_offset, "") \
 	X(bxt_hud_gonarch_anchor, "1 0") \
+	X(bxt_hud_rotate_trace, "0") \
+	X(bxt_hud_rotate_trace_offset, "") \
+	X(bxt_hud_rotate_trace_anchor, "0 0") \
+	X(bxt_show_rotate_trace, "0") \
 	X(bxt_hud_timer, "0") \
 	X(bxt_hud_timer_offset, "") \
 	X(bxt_hud_timer_anchor, "0 0.5") \

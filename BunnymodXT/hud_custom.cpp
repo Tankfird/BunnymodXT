@@ -1475,6 +1475,88 @@ namespace CustomHud
 			DrawMultilineString(x, y, out.str());
 	}
 
+	void DrawRotateTrace(float flTime)
+	{
+		if (CVars::bxt_hud_rotate_trace.GetBool() && ServerDLL::GetInstance().pEngfuncs)
+		{
+			int x, y;
+			GetPosition(CVars::bxt_hud_rotate_trace_offset, CVars::bxt_hud_rotate_trace_anchor, &x, &y, 2, (si.iCharHeight * 3) + 2);
+
+			std::ostringstream out;
+			out << "Trace:\n";
+			auto& hw = HwDLL::GetInstance();
+			auto pEngfuncs = ServerDLL::GetInstance().pEngfuncs;
+			
+			edict_t* pEnt = hw.GetPlayerEdict();
+			vec3_t newOrg;
+			vec3_t amove, pushorig, nextAng;
+			vec3_t forward, right, up;
+			vec3_t forwardNow, rightNow, upNow;
+
+			float movetime = hw.rotMovetime;
+			amove = hw.rotAVel*movetime;
+			pEngfuncs->pfnAngleVectors(hw.rotAng, forward, right, up);
+			pushorig = hw.rotAng;
+			nextAng = hw.rotAng + amove;
+
+			// AngleVectorsTranspose
+			{
+				vec3_t f, r, u;
+				pEngfuncs->pfnAngleVectors(nextAng, f, r, u);
+				if (forwardNow) { forwardNow[0] = f[0]; forwardNow[1] = -r[0]; forwardNow[2] = u[0]; }
+				if (rightNow)   { rightNow[0]   = f[1]; rightNow[1]   = -r[1]; rightNow[2]   = u[1]; }
+				if (upNow)      { upNow[0]      = f[2]; upNow[1]      = -r[2]; upNow[2]      = u[2]; }
+			}
+
+			
+			vec3_t start, end, push, move, endPos;
+
+			start = pEnt->v.origin - hw.rotPos;
+			move.x = DotProduct(forward, start);
+			move.y = -DotProduct(right, start);
+			move.z = DotProduct(up, start);
+			end.x = DotProduct(forwardNow, move);
+			end.y = DotProduct(rightNow, move);
+			end.z = DotProduct(upNow, move);
+
+			push = end - start;
+			endPos = push + pEnt->v.origin;
+			TraceResult tr{};
+			pEngfuncs->pfnTraceMonsterHull(pEnt, pEnt->v.origin, endPos, 0, pEnt, &tr);
+			if (pEnt) {
+				out << "Push: " << push.x << " " << push.y << " " << push.z << '\n'
+					<< "EndPos: " << endPos.x << " " << endPos.y << " " << endPos.z << '\n' 
+					<< "Frametime: " << hw.rotMovetime << '\n';
+
+				out << "fAllSolid: " << tr.fAllSolid << '\n'
+					<< "fStartSolid: " << tr.fStartSolid << '\n'	
+					<< "fInOpen: " << tr.fInOpen << '\n'	
+					<< "fInWater: " << tr.fInWater << '\n'	
+					<< "flFraction: " << tr.flFraction << '\n'	
+					<< "vecEndPos: " << tr.vecEndPos[0] << " " << tr.vecEndPos[1] << " " << tr.vecEndPos[2] <<	'\n'
+					<< "flPlaneDist: " << tr.flPlaneDist << '\n'	
+					<< "vecPlaneNormal: " << tr.vecPlaneNormal[0] << " " << tr.vecPlaneNormal[1] << " " << tr.vecPlaneNormal[2] <<	'\n'
+					<< "pHit: ";
+					edict_t *edicts;
+					const int numEdicts = hw.GetEdicts(&edicts);
+					const auto entIndex = tr.pHit - edicts;
+					if (hw.IsValidEdict(tr.pHit)) {
+						const char *classname = hw.GetString(tr.pHit->v.classname);
+						out << classname << " " << entIndex << '\n';
+					} else {
+						out << "N/A" << '\n';
+
+					}
+					out << "iHitgroup: " << tr.iHitgroup << '\n';
+			}
+			else {
+				out << "Not found";
+			}
+
+			DrawMultilineString(x, y, out.str());
+		}
+	}
+
 	static void DrawCrosshair(float time)
 	{
 		if (!CVars::bxt_cross.GetBool())
@@ -1835,6 +1917,7 @@ namespace CustomHud
 		DrawVisibleLandmarks(flTime);
 		DrawNihilanthInfo(flTime);
 		DrawGonarchInfo(flTime);
+		DrawRotateTrace(flTime);
 		DrawIncorrectFPSIndicator(flTime);
 		DrawCollisionDepthMap(flTime);
 		DrawTASEditorStatus();

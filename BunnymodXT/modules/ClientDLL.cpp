@@ -966,6 +966,7 @@ void ClientDLL::RegisterCVarsAndCommands()
 		REG(bxt_hud_useables_radius);
 		REG(bxt_show_splits);
 		REG(bxt_splits_color);
+		REG(bxt_show_rotate_trace);
 	}
 
 	if (ORIG_V_CalcRefdef) {
@@ -1035,6 +1036,9 @@ void ClientDLL::RegisterCVarsAndCommands()
 		REG(bxt_hud_gonarch);
 		REG(bxt_hud_gonarch_offset);
 		REG(bxt_hud_gonarch_anchor);
+		REG(bxt_hud_rotate_trace);
+		REG(bxt_hud_rotate_trace_offset);
+		REG(bxt_hud_rotate_trace_anchor);
 		REG(bxt_hud_timer);
 		REG(bxt_hud_timer_offset);
 		REG(bxt_hud_timer_anchor);
