@@ -195,6 +195,8 @@
 	X(bxt_hud_entities, "0") \
 	X(bxt_hud_entities_offset, "") \
 	X(bxt_hud_entities_anchor, "0 0") \
+	X(bxt_hud_entities_min, "0") \
+	X(bxt_hud_entities_max, "900") \
 	X(bxt_hud_entities_avel, "0") \
 	X(bxt_hud_entities_avel_offset, "") \
 	X(bxt_hud_entities_avel_anchor, "0 0") \

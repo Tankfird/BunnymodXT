@@ -1389,7 +1389,9 @@ namespace CustomHud
 		const int numEdicts = hw.GetEdicts(&edicts);
 		for (int e = 0; e < numEdicts; ++e) {
 			const edict_t *ent = edicts + e;
-			if (!hw.IsValidEdict(ent))
+			if (!hw.IsValidEdict(ent)
+			|| e < CVars::bxt_hud_entities_min.GetInt()
+			|| e > CVars::bxt_hud_entities_max.GetInt())
 				continue;
 
 			const char *classname = hw.GetString(ent->v.classname);
