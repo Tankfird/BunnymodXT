@@ -1620,8 +1620,10 @@ void ServerDLL::RegisterCVarsAndCommands()
 		REG(bxt_show_triggers_legacy_alpha);
 		REG(bxt_render_far_entities);
 	}
-	if (ORIG_PM_CheckStuck)
+	if (ORIG_PM_CheckStuck) {
 		REG(bxt_fire_on_stuck);
+		REG(bxt_ch_set_groundentity);
+	}
 	if (ORIG_CTriggerSave__SaveTouch || ORIG_CTriggerSave__SaveTouch_Linux)
 		REG(bxt_disable_autosave);
 	if (pCS_Stamina_Value || is_cof)
@@ -1975,6 +1977,16 @@ HOOK_DEF_0(ServerDLL, int, __cdecl, PM_CheckStuck)
 	bool stuck_cur_frame = false;
 	static bool not_stuck_prev_frame = false;
 	stuck_cur_frame = ORIG_PM_CheckStuck();
+	if (stuck_cur_frame && CVars::bxt_ch_set_groundentity.GetInt() > 0) {
+		const auto& sv = ServerDLL::GetInstance();
+		if (sv.ppmove) {
+			// HACK justs populates the last physent slot with our own info
+			playermove_t* pmove = static_cast<playermove_t*>(*sv.ppmove);
+			physent_t* physents = static_cast<physent_t*>(pmove->physents);
+			physents[599].info = CVars::bxt_ch_set_groundentity.GetInt();
+			pmove->onground = 599;
+		}
+	}
 	if (!CVars::bxt_fire_on_stuck.IsEmpty() && stuck_cur_frame && not_stuck_prev_frame)
 	{
 		std::ostringstream ss;
