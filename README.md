@@ -1,4 +1,35 @@
 # Bunnymod XT
+Added many features
+
+
+Set Range to bxt_hud_entities
+-  bxt_hud_entities_min
+-  bxt_hud_entities_max 
+
+See entities that can push with non-zero angular velocity
+- bxt_hud_entities_avel
+
+Set Groundentity #
+- bxt_ch_set_groundentity 
+- Ex. bxt_ch_set_groundentity 19 to have it set to 19 whenever you are stuck
+
+Set up rotate trace vars
+- bxt_ch_rot_pos
+- bxt_ch_rot_ang
+- bxt_ch_rot_avel
+- bxt_ch_rot_ft   (Change for frametime adjustment 0.25 = 4fps, 0.01 = 100fps etc.)
+- bxt_ch_rot_ent (Use this, sets to current state of the ent you're lookin at)
+
+Draw a rotate trace
+- bxt_show_rotate_trace 
+- 1 = shows with current player position
+- 2 = shows current position and position when **bxt_ch_rot_trace** was used
+
+Show physents list
+- labels for the physents, 
+  - '+' active physent
+  - '=' physent you're standing on
+  - '-' stale physent
 
 ### VAC BAN WARNING: Do NOT connect to servers with this injected, or you might get VAC banned!
 
