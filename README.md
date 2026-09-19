@@ -30,6 +30,10 @@ Show physents list
   - '+' active physent
   - '=' physent you're standing on
   - '-' stale physent
+- 1 = hud list
+- 2 = hud list with wireframe bboxs of nearby physents
+- 3 = hud list with solid bboxs of nearby physents
+- 4 = solid bboxs of nearby physents
 
 ### VAC BAN WARNING: Do NOT connect to servers with this injected, or you might get VAC banned!
 
