@@ -25,6 +25,10 @@ Draw a rotate trace
 - 1 = shows with current player position
 - 2 = shows current position and position when **bxt_ch_rot_trace** was used
 
+Hud debug rotate trace
+- bxt_hud_rotate_trace
+- shows debug for the trace such as push/frametime/endpos etc.
+
 Show physents list
 - labels for the physents, 
   - '+' active physent
