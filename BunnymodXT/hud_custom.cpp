@@ -1557,6 +1557,60 @@ namespace CustomHud
 		}
 	}
 
+	static void DrawAVelEntities(float flTime)
+	{
+		if (!CVars::bxt_hud_entities_avel.GetBool())
+			return;
+
+		int x, y;
+		GetPosition(CVars::bxt_hud_entities_avel_offset, CVars::bxt_hud_entities_avel_anchor, &x, &y, 2, (si.iCharHeight * 3) + 2);
+
+		const auto max_lines = std::max(1, (si.iHeight - y - si.iCharHeight) / si.iCharHeight);
+		int current_line = 0;
+
+		std::ostringstream out;
+
+		const auto& hw = HwDLL::GetInstance();
+
+		edict_t *edicts;
+		const int numEdicts = hw.GetEdicts(&edicts);
+		for (int e = 0; e < numEdicts; ++e) {
+			const edict_t *ent = edicts + e;
+			if (!hw.IsValidEdict(ent))
+				continue;
+
+			if ((ent->v.avelocity[0] == 0 && ent->v.avelocity[1] == 0 && ent->v.avelocity[2] == 0)
+			|| ent->v.movetype != MOVETYPE_PUSH
+			|| ent->v.solid == SOLID_NOT)
+				continue;
+
+			const char *classname = hw.GetString(ent->v.classname);
+			out << e << ": " << classname;
+
+			if (ent->v.targetname != 0) {
+				const char *targetname = hw.GetString(ent->v.targetname);
+				out << " - " << targetname;
+			}
+
+			out << " " << ent->v.avelocity[0] << " " << ent->v.avelocity[1] << " " << ent->v.avelocity[2];
+
+			if (CVars::bxt_hud_entities_avel.GetInt() > 1) {
+				out << " | " << ent->v.nextthink << " " << ent->v.ltime << " | " << (ent->v.nextthink - ent->v.ltime);
+			}
+
+			out << '\n';
+
+			if (++current_line == max_lines) {
+				x = DrawMultilineString(x, y, out.str()) + 10;
+				out.str(std::string());
+				current_line = 0;
+			}
+		}
+
+		if (current_line > 0)
+			DrawMultilineString(x, y, out.str());
+	}
+
 	static void DrawCrosshair(float time)
 	{
 		if (!CVars::bxt_cross.GetBool())
@@ -1923,6 +1977,7 @@ namespace CustomHud
 		DrawTASEditorStatus();
 		DrawEntities(flTime);
 		DrawPhysEnts(flTime);
+		DrawAVelEntities(flTime);
 		DrawCrosshair(flTime);
 		DrawStamina(flTime);
 		DrawSplit(flTime);
